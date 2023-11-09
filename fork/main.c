@@ -49,13 +49,17 @@ int main()
             perror("fork");
             exit(EXIT_FAILURE);
         case 0:
+        {
             puts("Child process is created");
             sleep(5);
+            exit(EXIT_SUCCESS);
+        }
         default:
             printf("Parent: %d. Child: %jd\n", getpid(), (intmax_t) pid);
             puts("Parent process. Waiting for a child process to finish");
             int wstatus;
             wait(&wstatus);
+            printf("Child exit status: %d\n",WEXITSTATUS(wstatus));
     }
     return 0;
 }

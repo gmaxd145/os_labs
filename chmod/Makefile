@@ -4,6 +4,6 @@ mychmod: main.c
 clean:
 	rm mychmod
 run: mychmod
-	./mychmod 000 text.txt
+	./mychmod text.txt
 
 

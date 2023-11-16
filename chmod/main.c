@@ -14,20 +14,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// enum target
-// {
-//     user,
-//     group,
-//     other
-// };
-
-// enum action
-// {
-//     plus,
-//     minus,
-//     equal
-// }
-
 int main(int argc, char** argv)
 {
     if (argc != 3)
@@ -38,9 +24,9 @@ int main(int argc, char** argv)
     mode_t newMode = 0;
     char* options = argv[1];
     char* path = argv[2];
-    if (options[0] >= '0' && options[0] <= '7') // проверить, что 2 аргумент это только цифры от 0 до 7 
+    if (options[0] >= '0' && options[0] <= '7') 
     {
-        newMode = strtol(options, NULL, 8); // handle strtol return value
+        newMode = strtol(options, NULL, 8);
     }
     else 
     {

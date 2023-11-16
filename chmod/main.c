@@ -119,7 +119,7 @@ int main(int argc, char** argv)
                 {
                     if (read)    newMode |= S_IRGRP;  
                     if (write)   newMode |= S_IWGRP;
-                    if (execute) newMode |= S_IWGRP;
+                    if (execute) newMode |= S_IXGRP;
                 }
                 if (forOther)
                 {

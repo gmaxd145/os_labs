@@ -71,7 +71,6 @@ int main(int argc, char** argv)
                 return 1;
             }
         }
-        printf("%d %d %d\n", forUser, forGroup, forOther);
         if (forUser == false && forGroup == false && forOther == false)
         {
             forUser = forGroup = forOther = true;
@@ -107,8 +106,6 @@ int main(int argc, char** argv)
             }
             i += 1;
         } 
-        printf("%d %d %d\n", forUser, forGroup, forOther);
-        printf("%d %d %d\n", read, write, execute);
         switch (operator)
             {
             case '+':
@@ -142,7 +139,7 @@ int main(int argc, char** argv)
                 {
                     if (read)    newMode -= newMode & S_IRGRP;  
                     if (write)   newMode -= newMode & S_IWGRP;
-                    if (execute) newMode -= newMode & S_IWGRP;
+                    if (execute) newMode -= newMode & S_IXGRP;
                 }
                 if (forOther)
                 {

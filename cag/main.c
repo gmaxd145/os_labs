@@ -13,3 +13,7 @@
 //         a. ./mycat file.txt | ./mygrep pattern
 //         b. ls -l | ./mygrep pattern
 
+int main(int argc, char** argv)
+{
+    
+}

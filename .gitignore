@@ -7,6 +7,8 @@
 /chmod/mychmod
 /chmod/text.txt
 
+/pipefifo/build
+
 #vs code
 /.vscode
 /chmod/main

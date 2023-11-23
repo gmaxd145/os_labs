@@ -9,6 +9,8 @@
 
 /pipefifo/build
 
+/arch/spec
+
 #vs code
 /.vscode
 /chmod/main

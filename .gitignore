@@ -9,9 +9,8 @@
 
 /pipefifo/build
 
-/arch/spec
+/.idea
 
-#vs code
-/.vscode
-/chmod/main
-/ls/main
+/arch/spec
+/arch/cmake-build-debug
+/arch/.idea

@@ -166,6 +166,9 @@ void extractFile(char* archName, char* fileName)
     write(archFile, movePartCopy, movePartSize);
     //7
     ftruncate(archFile, delFileStartPos - sizeof(struct FileData) + movePartSize);
+    lseek(archFile, 0, SEEK_SET);
+    --filesCount;
+    write(archFile, &filesCount, sizeof(filesCount));
     close(archFile);
 }
 

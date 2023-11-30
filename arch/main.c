@@ -102,19 +102,26 @@ void extractFile(char* archName, char* fileName)
     off_t delFileStartPos = 0;
     int i = 0;
     off_t for_debug;
+    mode_t delFileMode = 0;
+    bool noFileToExtract = true;
     for (; i < filesCount; ++i)
     {
         read(archFile, &fileData, sizeof(struct FileData));
         if (memcmp(fileData.fileName, fileName, strlen(fileName)) == 0)
         {
+            delFileMode = fileData.fileMode;
             ++i;
+            noFileToExtract = false;
             break;
         }
         lseek(archFile, fileData.fileSize, SEEK_CUR);
-        for_debug = lseek(archFile, 0, SEEK_CUR);
+    }
+    if (noFileToExtract)
+    {
+        fprintf(stderr, "%s\n", "This file is not in archive.");
+        exit(EXIT_SUCCESS);
     }
     //1
-    for_debug = lseek(archFile, 0, SEEK_CUR);
     delFileSize = fileData.fileSize;
     if (delFileStartPos == -1) {
         perror("Error getting file position");
@@ -159,7 +166,7 @@ void extractFile(char* archName, char* fileName)
         exit(EXIT_SUCCESS);
     }
     //
-    int extractedFile = open(fileName, O_WRONLY | O_CREAT, 00666);
+    int extractedFile = open(fileName, O_WRONLY | O_CREAT, delFileMode);
     write(extractedFile, delFileCopy, delFileSize);
     close(extractedFile);
     //6

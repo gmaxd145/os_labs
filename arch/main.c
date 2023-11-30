@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <errno.h>
+//#include <errno.h>
 #include <sys/stat.h>
 #include <string.h>
-#include <sys/types.h>
+//#include <sys/types.h>
 
 #define FILE_NAME_MAX_SIZE 128
 
@@ -28,26 +28,26 @@ void printHelp()
 
 void insertFile(char* archName, char* fileName)
 {
-    bool isArchExists = access(archName, F_OK);
-    int archFile = open(archName, O_RDWR | O_CREAT, 00777);    
+    int archExistedBeforeOpen = access(archName, F_OK);
+    int archFile = open(archName, O_RDWR | O_CREAT, 00666);
     if (archFile == -1)
     {
         perror("Open arch error");
         exit(EXIT_FAILURE);
     }
     int filesCount = 0;
-    if (!isArchExists)
+    if (archExistedBeforeOpen != 0)
     {
         write(archFile, &filesCount, sizeof(filesCount));  
         lseek(archFile, 0, SEEK_SET);
     }
     read(archFile, &filesCount, sizeof(filesCount));
-    printf("!!!!!!!!!!!!   %d\n", filesCount);
     struct FileData fileData;
+    memset(fileData.fileName, '\0', FILE_NAME_MAX_SIZE);
     for (int i = 0; i < filesCount; ++i)
     {
         read(archFile, &fileData, sizeof(struct FileData));
-        if (fileData.fileName == fileName)
+        if (memcmp(fileData.fileName, fileName, strlen(fileName)) == 0)
         {
             printf("%s\n", "Try to insert file which already in archive");
             exit(EXIT_SUCCESS);
@@ -60,6 +60,7 @@ void insertFile(char* archName, char* fileName)
         perror("Stat error");
         exit(EXIT_FAILURE);
     }
+    memset(fileData.fileName, '\0', FILE_NAME_MAX_SIZE);
     strcpy(fileData.fileName, fileName);
     fileData.fileMode = st.st_mode;
     fileData.fileSize = st.st_size;
@@ -70,8 +71,8 @@ void insertFile(char* archName, char* fileName)
         perror("Open file error");
         exit(EXIT_FAILURE);
     }
-    char* fileContentBuf = malloc(fileData.fileSize);
-    int rBytes = read(file, fileContentBuf, fileData.fileSize);
+    char fileContentBuf[fileData.fileSize];
+    off_t rBytes = read(file, fileContentBuf, fileData.fileSize);
     if (rBytes == -1)
     {
         perror("Read error");
@@ -80,14 +81,112 @@ void insertFile(char* archName, char* fileName)
     write(archFile, fileContentBuf, rBytes);
     lseek(archFile, 0, SEEK_SET);
     ++filesCount;
-    printf("??????????????   %d\n", filesCount);
-    if(write(archFile, &filesCount, sizeof(filesCount)) == -1)
-    {   
-        perror("AAAAAAAAAAA");
-    }
+    write(archFile, &filesCount, sizeof(filesCount));
     close(file);
     close(archFile);
-    free(fileContentBuf);
+}
+
+void extractFile(char* archName, char* fileName)
+{
+    int archFile = open(archName, O_RDWR, 00666);
+    if (archFile == -1)
+    {
+        perror("Open arch error");
+        exit(EXIT_FAILURE);
+    }
+    int filesCount = 0;
+    read(archFile, &filesCount, sizeof(filesCount));
+    struct FileData fileData;
+    memset(fileData.fileName, '\0', FILE_NAME_MAX_SIZE);
+    off_t delFileSize = 0;
+    off_t delFileStartPos = 0;
+    int i = 0;
+    off_t for_debug;
+    for (; i < filesCount; ++i)
+    {
+        read(archFile, &fileData, sizeof(struct FileData));
+        if (memcmp(fileData.fileName, fileName, strlen(fileName)) == 0)
+        {
+            ++i;
+            break;
+        }
+        lseek(archFile, fileData.fileSize, SEEK_CUR);
+        for_debug = lseek(archFile, 0, SEEK_CUR);
+    }
+    //1
+    for_debug = lseek(archFile, 0, SEEK_CUR);
+    delFileSize = fileData.fileSize;
+    if (delFileStartPos == -1) {
+        perror("Error getting file position");
+        exit(EXIT_FAILURE);
+    }
+    delFileStartPos = lseek(archFile, 0, SEEK_CUR);
+    //2
+    lseek(archFile, fileData.fileSize, SEEK_CUR);
+    for_debug = lseek(archFile, 0, SEEK_CUR);
+    off_t movePartStart = lseek(archFile, 0, SEEK_CUR);
+    off_t movePartSize = 0;
+    for (; i < filesCount; ++i)
+    {
+        read(archFile, &fileData, sizeof(struct FileData));
+        lseek(archFile, fileData.fileSize, SEEK_CUR);
+        movePartSize += sizeof(struct FileData);
+        movePartSize += fileData.fileSize;
+    }
+    //3
+    lseek(archFile, movePartStart, SEEK_SET);
+    char movePartCopy[movePartSize];
+    if (read(archFile, movePartCopy, movePartSize) == -1)
+    {
+        perror("Read error");
+        exit(EXIT_FAILURE);
+    }
+    //4
+    lseek(archFile, delFileStartPos, SEEK_SET);
+    //5
+    char delFileCopy[delFileSize];
+    if (read(archFile, delFileCopy, delFileSize) == -1)
+    {
+        perror("Read delFileCopy error");
+        exit(EXIT_FAILURE);
+    }
+    lseek(archFile, delFileStartPos - sizeof(struct FileData), SEEK_SET);
+    // вывод ошибки если файл который мы экстрактим уже есть в директории
+    int fileWithSameNameAsExctFile = access(fileName, F_OK);
+    if (fileWithSameNameAsExctFile == 0)
+    {
+        fprintf(stderr, "%s\n", "try to extract file which already in directory");
+        exit(EXIT_SUCCESS);
+    }
+    //
+    int extractedFile = open(fileName, O_WRONLY | O_CREAT, 00666);
+    write(extractedFile, delFileCopy, delFileSize);
+    close(extractedFile);
+    //6
+    write(archFile, movePartCopy, movePartSize);
+    //7
+    ftruncate(archFile, delFileStartPos - sizeof(struct FileData) + movePartSize);
+    close(archFile);
+}
+
+void filestat(char* archName)
+{
+    int archFile = open(archName, O_RDONLY, 00666);
+    if (archFile == -1)
+    {
+        perror("Open arch error");
+        exit(EXIT_FAILURE);
+    }
+    int filesCount = 0;
+    read(archFile, &filesCount, sizeof(filesCount));
+    struct FileData fileData;
+//    memset(fileData.fileName, '\0', FILE_NAME_MAX_SIZE);
+    for (int i = 0; i < filesCount; ++i)
+    {
+        read(archFile, &fileData, sizeof(struct FileData));
+        printf("%s %d\n", fileData.fileName, fileData.fileSize);
+        lseek(archFile, fileData.fileSize, SEEK_CUR);
+    }
 }
 
 int main(int argc, char** argv)
@@ -143,14 +242,14 @@ int main(int argc, char** argv)
     {       
         insertFile(archName, fileName);            
     }
-    // if (eFlag)
-    // {
-    //     extractFile(archName, filePath);
-    // }
-    // if (sFlag)
-    // {
-    //     filesst(archName);
-    // }
+     if (eFlag)
+     {
+         extractFile(archName, fileName);
+     }
+     if (sFlag)
+     {
+         filestat(archName);
+     }
 
     return 0;
 }

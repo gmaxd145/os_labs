@@ -14,3 +14,7 @@
 /arch/spec
 /arch/cmake-build-debug
 /arch/.idea
+
+cmake-build-debug
+
+cag/*.c

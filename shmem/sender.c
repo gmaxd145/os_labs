@@ -44,7 +44,7 @@ int main()
         exit(1);
     }
 
-    if ((shmid = shmget(key, BUF_SIZE, O_CREAT | O_EXCL | 0666)) == -1)
+    if ((shmid = shmget(key, BUF_SIZE, IPC_CREAT | IPC_EXCL | 0666)) == -1)
     {
         perror("shmget");
         exit(1);

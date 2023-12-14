@@ -14,7 +14,7 @@ char* segptr;
 int main()
 {
     key_t key;
-    if ((key = ftok("Makefile", 5)) == -1)
+    if ((key = ftok("test", 5)) == -1)
     {
         perror("ftok");
         exit(1);

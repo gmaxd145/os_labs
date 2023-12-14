@@ -42,14 +42,12 @@ int main()
     pthread_t tid[WRITERS_N + 1];
     pthread_mutex_init(&mutex, NULL);
     pthread_create(&tid[0], NULL, writer, NULL);
-
     for (int i = 1; i <= WRITERS_N; i++) {
         pthread_create(&tid[i], NULL, reader, NULL);
     }
     for (int i = 0; i <= WRITERS_N; i++) {
         pthread_join(tid[i], NULL);
     }
-
     pthread_mutex_destroy(&mutex);
     return 0;
 }

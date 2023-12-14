@@ -38,7 +38,7 @@ int main()
     signal(SIGINT, signalfunction);
 
     key_t key;
-    if ((key = ftok("test", 5)) == -1)
+    if ((key = ftok("tz", 5)) == -1)
     {
         perror("ftok");
         exit(1);

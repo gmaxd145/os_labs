@@ -35,7 +35,6 @@ void *reader(void *arg)
         pthread_cond_wait(&cond, &mutex);
         printf("tid: %lx, array: %s\n", pthread_self(), str);
         pthread_mutex_unlock(&mutex);
-        sleep(1);
     }
 }
 

@@ -3,10 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-//#include <errno.h>
 #include <sys/stat.h>
 #include <string.h>
-//#include <sys/types.h>
 
 #define FILE_NAME_MAX_SIZE 128
 
